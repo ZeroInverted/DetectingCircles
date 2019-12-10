@@ -1,8 +1,27 @@
 import cv2
 import numpy as np
-IMAGE_FILE = "test_sample6.jpg"
+import math
+from scipy import ndimage
+
+
+
+IMAGE_FILE = "test_sample8.jpg"
 
 img = cv2.imread(IMAGE_FILE, cv2.IMREAD_GRAYSCALE)
+#img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+img_edges = cv2.Canny(img, 100, 100, apertureSize=3)
+lines = cv2.HoughLinesP(img_edges, 1, math.pi / 180.0, 100, minLineLength=100, maxLineGap=5)
+
+angles = []
+
+for x1, y1, x2, y2 in lines[0]:
+    #cv2.line(img_before, (x1, y1), (x2, y2), (255, 0, 0), 3)
+    angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
+    angles.append(angle)
+
+median_angle = np.median(angles)
+img= ndimage.rotate(img, median_angle)
+
 img1 = cv2.medianBlur(img, 13)
 img2= cv2.medianBlur(img, 5)
 correctCircles = cv2.HoughCircles(img1, cv2.HOUGH_GRADIENT, 1, 20, param1=40, param2=30, minRadius=10, maxRadius=30)
@@ -19,8 +38,22 @@ cv2.imshow("Gray: All", img2)
 
 ci=1
 ai=1
-img1 = cv2.imread(IMAGE_FILE, cv2.IMREAD_COLOR)
+img1= cv2.imread(IMAGE_FILE, cv2.IMREAD_COLOR)
 img2= cv2.imread(IMAGE_FILE, cv2.IMREAD_COLOR)
+img_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+img_edges = cv2.Canny(img_gray, 100, 100, apertureSize=3)
+lines = cv2.HoughLinesP(img_edges, 1, math.pi / 180.0, 100, minLineLength=100, maxLineGap=5)
+
+angles = []
+
+for x1, y1, x2, y2 in lines[0]:
+    #cv2.line(img_before, (x1, y1), (x2, y2), (255, 0, 0), 3)
+    angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
+    angles.append(angle)
+
+median_angle = np.median(angles)
+img1= ndimage.rotate(img1, median_angle)
+img2=ndimage.rotate(img2, median_angle)
 for (x, y, r) in correctCircles[0, :]:
     cv2.putText(img1, ""+str(ci), (int(x-50), int(y+9)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2)
     print(""+str(ci)+"= X: "+str(x) +" Y:"+str(y))
@@ -38,11 +71,13 @@ cv2.imshow("All", img2)
 
 def checkGender():
     for (x,y,r) in correctCircles[0, :]:
-        if (y==294 or y==292 or y==293 or y==295 or y==296):
-            if(x==1258 or x==1259 or x==1260 or x==1257 or x==1256):
+        if (y in range(290, 390)):
+            if(x in range(1300,1600)):
                 return "Male"
             else:
                 return "Female"
+        else:
+            return "NONE"
 
 def checkSemester():
     for(x,y,r) in correctCircles[0, :]:
@@ -53,6 +88,8 @@ def checkSemester():
                 return "Spring"
             else:
                 return"Summer"
+        else:
+            return "NONE"
 def checkProgram():
     for(x,y,r) in correctCircles[0, :]:
         if(y==454 or y== 455 or y==456 or y==457 or y==458 or y==459 or y==460):
@@ -276,46 +313,46 @@ def check19Option():
                 v42="Strongly Disagree"
         elif(y in range(1886, 1906)): #4.3
             v43="NONE"
-            if(x in range(1120, 1128)):
+            if(x in range(1110, 1150)):
                 v43="Strongly Agree"
-            elif(x in range(1218, 1226)):
+            elif(x in range(1210, 1250)):
                 v43="Agree"
-            elif(x in range(1322, 1330)):
+            elif(x in range(1310, 1350)):
                 v43="Neutral"
-            elif(x in range(1420, 1428)):
+            elif(x in range(1410, 1450)):
                 v43="Disagree"
-            elif(x in range(1520, 1528)):
+            elif(x in range(1510, 1550)):
                 v43="Strongly Disagree"
         elif(y in range(2004, 2024)): #5.1
             v51="NONE"
-            if(x in range(1120, 1128)):
+            if(x in range(1110, 1150)):
                 v51="Strongly Agree"
-            elif(x in range(1218, 1226)):
+            elif(x in range(1210, 1250)):
                 v51="Agree"
-            elif(x in range(1322, 1330)):
+            elif(x in range(1310, 1350)):
                 v51="Neutral"
-            elif(x in range(1420, 1428)):
+            elif(x in range(1410, 1450)):
                 v51="Disagree"
-            elif(x in range(1520, 1528)):
+            elif(x in range(1510, 1550)):
                 v51="Strongly Disagree"
         elif(y in range(2046, 2066)): #5.2
             v52="NONE"
-            if(x in range(1120, 1128)):
+            if(x in range(1110, 1140)):
                 v52="Strongly Agree"
-            elif(x in range(1218, 1226)):
+            elif(x in range(1210, 1250)):
                 v52="Agree"
-            elif(x in range(1322, 1330)):
+            elif(x in range(1310, 1350)):
                 v52="Neutral"
-            elif(x in range(1420, 1428)):
+            elif(x in range(1410, 1450)):
                 v52="Disagree"
-            elif(x in range(1520, 1528)):
+            elif(x in range(1510, 1550)):
                 v52="Strongly Disagree"
-    print("1.1 Is" + v11 + "\n 1.2 Is "+v12 +"\n1.3 Is " +v13+"\n1.4 is"+v14+ "\n1.5 is "+v15 +"\n2.1 is"+v21+"\n2.2 is"+v22 +"\n2.3 is"+v23)
-    print("2.4 is"+v24+"\n2.5 is"+v25+"\n2.6 is"+v26 + "\n3.1 is "+v31 +"\n3.2 is"+v32 + "\n3.3 is "+v33+"\n4.1 is"+v41+"\n4.2 is"+v42+"\n5.1 is "+v51+"\n5.2 is"+v52)
+    print("1.1: " + v11 + "\n1.2: "+v12 +"\n1.3: " +v13+"\n1.4: "+v14+ "\n1.5: "+v15 +"\n2.1: "+v21+"\n2.2: "+v22 +"\n2.3: "+v23)
+    print("2.4: "+v24+"\n2.5: "+v25+"\n2.6: "+v26 + "\n3.1: "+v31 +"\n3.2: "+v32 + "\n3.3: "+v33+"\n4.1: "+v41+"\n4.2: "+v42+"\n4.3: "+v43+"\n5.1: "+v51+"\n5.2: "+v52)
 
 print("Identified Gender is:"+ checkGender())
 print("Identified Semester is:"+checkSemester())
 print("Identified Credit Hours Program is:"+ checkProgram())
-
+# check19Option()
 cv2.waitKey()
 cv2.destroyAllWindows()
