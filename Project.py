@@ -4,7 +4,7 @@ import math
 from scipy import ndimage
 v11=v12=v13=v14=v15=v21=v22=v23=v24=v25=v26=v31=v32=v33=v41=v42=v43=v51=v52="NONE"
 
-IMAGE_FILE = "test_sample9.jpg"
+IMAGE_FILE = "test_sample10.jpg"
 
 img = cv2.imread(IMAGE_FILE, cv2.IMREAD_GRAYSCALE)
 #img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
