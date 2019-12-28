@@ -1,8 +1,10 @@
+#Always outnumbered. NEVER outcoded.
+
 import cv2
 import numpy as np
 import math
 from scipy import ndimage
-v11=v12=v13=v14=v15=v21=v22=v23=v24=v25=v26=v31=v32=v33=v41=v42=v43=v51=v52="NONE"
+v11=v12=v13=v14=v15=v21=v22=v23=v24=v25=v26=v31=v32=v33=v41=v42=v43=v51=v52="NONE" #Chosen parameters
 IMAGE_FILE = "test_sample8.jpg"
 def checkGender():
     for (x,y,r) in correctCircles[0, :]:
@@ -279,13 +281,9 @@ def check19Option():
                 v52="Disagree"
             elif(x in range(1510, 1540)):
                 v52="Strongly Disagree"
-    print("1.1: " + v11 + "\n1.2: "+v12 +"\n1.3: " +v13+"\n1.4: "+v14+ "\n1.5: "+v15 +"\n2.1: "+v21+"\n2.2: "+v22 +"\n2.3: "+v23)
-    print("2.4: "+v24+"\n2.5: "+v25+"\n2.6: "+v26 + "\n3.1: "+v31 +"\n3.2: "+v32 + "\n3.3: "+v33+"\n4.1: "+v41+"\n4.2: "+v42+"\n4.3: "+v43+"\n5.1: "+v51+"\n5.2: "+v52)
 def checkForShift(angle, img1, img2 ,im2):
-    if (angle!=0):  #Rotation case:
-
+    if (angle!=0):
         #Detecting shift values
-
         allCirc = cv2.HoughCircles(im2, cv2.HOUGH_GRADIENT, 1, 20, param1=40, param2=30, minRadius=10, maxRadius=30)
         maleXCoord = 100000
         maleYCoord = 100000
@@ -295,8 +293,6 @@ def checkForShift(angle, img1, img2 ,im2):
                 maleXCoord = x
         maleYCoord=np.uint16(np.around(maleYCoord))
         maleXCoord=np.uint16(np.around(maleXCoord))
-        count=0
-
         for(x, y, r) in allCirc[0, :]: #Getting minimum X coordinate that has the minimum coordinate. (Male Gender circle.)
             minRange=int(y)-8
             maxRange=int(y)+8
@@ -304,113 +300,53 @@ def checkForShift(angle, img1, img2 ,im2):
                 if (maleXCoord > x):
                     maleYCoord = y
                     maleXCoord = x
-            count+=1
         maleYCoord=math.ceil(maleYCoord)
         maleXCoord=math.ceil(maleXCoord)
         maleYCoord=int(maleYCoord)
         maleXCoord=int(maleXCoord)
-
-        print("X: " + str(maleXCoord) + " Y: " + str(+maleYCoord))
-        print("X Shift: "+str(math.fabs(maleXCoord-1258))+" Y Shift:"+str(math.fabs(maleYCoord-294)))
-
         # X Axis Shift
         shift = int(math.fabs(maleXCoord-1258))
         for i in range(img1.shape[1] - 1, img1.shape[1] - shift, -1):
             img1 = np.roll(img1, -1, axis=1)
             img1[:, -1] = 0
-
         for i in range(img2.shape[1] - 1, img2.shape[1] - shift, -1):
             img2 = np.roll(img2, -1, axis=1)
             img2[:, -1] = 0
-
         # Y Axis Shift
         shift = int(math.fabs(maleYCoord-294))
-
         for i in range(img1.shape[0] - 1, img1.shape[0] - shift, -1):
             img1 = np.roll(img1, -1, axis=0)
             img1[-1, :] = 0
-
         for i in range(img2.shape[0] - 1, img2.shape[0] - shift, -1):
             img2 = np.roll(img2, -1, axis=0)
             img2[-1, :] = 0
     return img1, img2
 def checkForRotation(imgOG, imgGray):
-
     img_edges = cv2.Canny(imgGray, 100, 100, apertureSize=3)
-    lines = cv2.HoughLinesP(img_edges, 1, math.pi / 180.0, 100, minLineLength=100, maxLineGap=5)
-
-    angles = []
-
+    lines = cv2.HoughLinesP(img_edges, 1, math.pi / 180.0, 100, minLineLength=100, maxLineGap=5) #Detect Lines
+    angles = [] #Store the angle of each line in an  array
     for x1, y1, x2, y2 in lines[0]:
-        #cv2.line(img_before, (x1, y1), (x2, y2), (255, 0, 0), 3)
-        angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
-        angles.append(angle)
-
-    median_angle = np.median(angles)
-    imgOG= ndimage.rotate(imgOG, median_angle)
+        angle = math.degrees(math.atan2(y2 - y1, x2 - x1)) #calculate line angle
+        angles.append(angle) #Insert the calculated value into the array
+    median_angle = np.median(angles) #Get Median Angle
+    imgOG= ndimage.rotate(imgOG, median_angle) #Rotate the original image with the median angle of line inclination
     return imgOG, angle
-
 img = cv2.imread(IMAGE_FILE, cv2.IMREAD_GRAYSCALE)
 img, angle=checkForRotation(img, img)
-img1 = cv2.medianBlur(img, 13)
-img2= cv2.medianBlur(img, 5)
+img1 = cv2.medianBlur(img, 13) #Blur aggressively until only the filled circles remain
+img2= cv2.medianBlur(img, 5) #Blur a little in order to smooth out the circles for detection
 im2=img2
-print("Angle: "+str(angle))
 img1, img2=checkForShift(angle, img1, img2, im2)
-
+#Detection
 correctCircles = cv2.HoughCircles(img1, cv2.HOUGH_GRADIENT, 1, 20, param1=40, param2=30, minRadius=10, maxRadius=30)
 allCircles = cv2.HoughCircles(img2, cv2.HOUGH_GRADIENT, 1, 20, param1=40, param2=30, minRadius=10, maxRadius=30)
-# np.ndarray.sort(correctCircles,1,"quicksort")
-# np.ndarray.sort(allCircles,1,"quicksort")
+#Round the results
 correctCircles=np.uint16(np.around(correctCircles))
 allCircles=np.uint16(np.around(allCircles))
-
+#Resize the image to a suitable size
 img1 = cv2.resize(img1, (600, 800))
 img2 = cv2.resize(img2, (600, 800))
-cv2.imshow("Gray: Correct", img1)
-cv2.imshow("Gray: All", img2)
 
-ci=1
-ai=1
-img1=img2= cv2.imread(IMAGE_FILE, cv2.IMREAD_COLOR)
-img_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-# img_edges = cv2.Canny(img_gray, 100, 100, apertureSize=3)
-# lines = cv2.HoughLinesP(img_edges, 1, math.pi / 180.0, 100, minLineLength=100, maxLineGap=5)
-#
-# angles = []
-#
-# for x1, y1, x2, y2 in lines[0]:
-#     #cv2.line(img_before, (x1, y1), (x2, y2), (255, 0, 0), 3)
-#     angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
-#     angles.append(angle)
-#
-# median_angle = np.median(angles)
-# img1= ndimage.rotate(img1, median_angle)
-# img2=ndimage.rotate(img2, median_angle)
-img1,_=checkForRotation(img1, img_gray)
-img2,_=checkForRotation(img1, img_gray)
-img1, img2=checkForShift(angle, img1, img2, im2)
-
-
-for (x, y, r) in correctCircles[0, :]:
-    cv2.putText(img1, ""+str(ci), (int(x-50), int(y+9)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2)
-    print(""+str(ci)+"= X: "+str(x) +" Y:"+str(y))
-    ci+=1
-
-for (x1, y1, r1) in allCircles[0, :]:
-    cv2.putText(img2, ""+str(ai), (int(x1-50), int(y1+9)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2)
-    print(""+str(ai)+"= X: "+str(x1) +" Y:"+str(y1))
-    ai+=1
-
-img1 = cv2.resize(img1, (600, 800))
-img2 = cv2.resize(img2, (600, 800))
-cv2.imshow("Correct", img1)
-cv2.imshow("All", img2)
-
-
-print("Identified Gender is:"+ checkGender())
-print("Identified Semester is:"+checkSemester())
-print("Identified Credit Hours Program is:"+ checkProgram())
 check19Option()
 with open(IMAGE_FILE+"_outut.txt","w") as text_file:
     print("Gender: {}".format(checkGender()), file=text_file)
